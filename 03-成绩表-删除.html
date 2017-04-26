@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            border-color: black;
+        }
+
+        input {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <input type="button" id="btn" value="添加">
+    <input type="button" id="btn1" onclick="f1()" value="清空">
+    <div id="box">
+    </div>
+    <script src="common.js"></script>
+    <script>
+        function f1() {
+            my$("box").innerHTML = "";
+        }
+
+        //1 封装函数  createTable()  createTHead()  createTBody()
+        //2 修改createTBody() 让他更通用
+                //传参数，传过去表格, 传数据行的数据  createTBody(table,datas)
+        //3 修改createTHead() 让他更通用
+                //设置返回值  返回值 返回table，给createTBody()使用
+                //设置参数  表头的数据  var table = createTHead(headers);
+        //4 创建createTable()
+            //参数   表头数据和数据行数据
+            //createTable(headers, datas);
+
+
+
+
+        //点击添加按钮，生成一行
+        var btn = my$("btn");
+        btn.onclick = function () {
+            //1 添加一行，需要获得table或者tbody
+
+            var tbody = getLastElement(table);
+            var tr = document.createElement("tr");
+            tbody.appendChild(tr);
+
+
+
+            //2 创建文本框对应的td
+            for(var i = 0; i < headers.length - 1;i++) {
+                var td = document.createElement("td");
+                tr.appendChild(td);
+
+                td.innerHTML = "<input type='text'>";
+            }
+
+            //3 创建存放 确定和取消的td
+            td = document.createElement("td");
+            tr.appendChild(td);
+            td.innerHTML = "<a href='#'>确定</a> <a href='#'>取消</a>";
+
+            //4 给确定和取消注册事件
+            //取消
+            var cancel = getLastElement(td);
+            cancel.onclick = function () {
+                tbody.removeChild(this.parentNode.parentNode);
+            };
+
+            //确定
+            var sure = getFirstElement(td);
+            sure.onclick = function () {
+
+                //获取当前按钮所在的tr
+                var tr = this.parentNode.parentNode;
+                //1 找到文本框，获取文本框的值
+                var name = tr.children[0].children[0].value;
+                var subject = tr.children[1].children[0].value;
+                var score = tr.children[2].children[0].value;
+                //2 把数据构造成对象，添加到数据中
+                var o = {"name":name,"subject":subject,"score":score};
+                scores.push(o);
+                //3 重新刷新表格
+                table = createTable(headers,scores);
+            };
+
+        };
+
+
+
+        //存储表头的内容
+        var headers = ["姓名","学科","成绩","操作"];
+        //数据
+        var scores = [
+            {"name":"马闯", "subject": "语文", "score": 90},
+            {"name":"马户", "subject": "数学", "score": 100},
+            {"name":"马伦", "subject": "体育", "score": 9},
+            {"name":"马尧", "subject": "音乐", "score": 100},
+            {"name":"马震", "subject": "语文", "score": 90},
+            {"name":"马云", "subject": "语文", "score": 90}
+        ];
+
+        var table =  createTable(headers, scores);
+
+        //1 创建表格
+        function createTable(headers, datas) {
+            var table = createTHead(headers);
+            createTBody(table, datas);
+            return table;
+        }
+
+        //2 创建表头
+        function createTHead(headers) {
+            //1 创建表格
+            var table = my$("tb");
+            if(table) {
+                //
+                my$("box").removeChild(table);
+            }
+
+            table = document.createElement("table");
+            my$("box").appendChild(table);
+            table.border = "1px";
+            table.cellSpacing = "0px";
+            table.cellPadding = "0px";
+            table.style.width = "400px";
+            table.id = "tb";
+
+            //2 表头
+
+            //IE7以前，表头，必须放在thead中才会显示
+            var thead = document.createElement("thead");
+            table.appendChild(thead);
+
+            var tr = document.createElement("tr");
+            thead.appendChild(tr);
+            tr.style.height = "50px";
+            tr.style.backgroundColor = "lightgray";
+
+
+            for(var i = 0; i < headers.length; i++) {
+                var header = headers[i];
+
+                var th = document.createElement("th");
+                tr.appendChild(th);
+//            th.innerText = header;
+                setInnerText(th, header);
+            }
+            return table;
+        }
+
+        //3 数据行
+        function createTBody(tb, datas) {
+
+            //IE7以前，数据行，必须放在tbody中才会显示
+            var tbody = document.createElement("tbody");
+            tb.appendChild(tbody);
+            tbody.style.textAlign = "center";
+
+
+            for(var i = 0; i < datas.length; i++) {
+                var data = datas[i];
+
+                //创建一行tr
+                tr = document.createElement("tr");
+                tbody.appendChild(tr);
+
+                //一行中有好多td
+
+                //遍历score对象的所有属性
+                for(var key in data) {
+                    //key -- 属性的名字
+                    //score[key]  -- 获取属性key的值
+                    var td = document.createElement("td");
+                    tr.appendChild(td);
+                    setInnerText(td, data[key]);
+                }
+                //操作 -- 删除
+                td = document.createElement("td");
+                tr.appendChild(td);
+
+                //最后一个td，生成删除“按钮”
+                td.innerHTML = "<a href='#'>删除</a>";
+                //1 点击删除"按钮"
+//                var link = td.children[0];
+                var link = getFirstElement(td);
+                link.index = i;
+                link.onclick = function () {
+                    //2 删除对应的行
+//                    tbody.removeChild(this.parentNode.parentNode);
+                    //3 删除对应的数据
+//                    this.index
+
+                    //怎么删除数组中的元素
+                    scores.splice(this.index, 1`);
+
+                    table = createTable(headers, scores);
+                };
+
+
+            }
+        }
+
+
+
+
+
+
+    </script>
+</body>
+</html>
